@@ -1,0 +1,16 @@
+export const LAUNCH_GUIDE_RESEARCH_DATE = '2026-10-01';
+
+export const LAUNCH_GUIDE_SOURCES = [
+  { id: 'pbh-guide', title: 'Business application process', agency: 'Philippine Business Hub', url: 'https://business.gov.ph/business-application-process', scope: 'An official overview of company, tax, employee, business license, and business permit applications through PBH.' },
+  { id: 'pbh-how-to', title: 'How to apply for a business', agency: 'Philippine Business Hub', url: 'https://business.gov.ph/how-to-apply', scope: 'PBH account setup and starting a new business application.' },
+  { id: 'pbh-faq', title: 'Frequently asked questions and coverage', agency: 'Philippine Business Hub', url: 'https://business.gov.ph/faqs', scope: 'Participating agencies, portal coverage, and tax-type questionnaire information; local integration currently covers only select LGUs.' },
+  { id: 'dti', title: 'Business Name Registration FAQs', agency: 'Department of Trade and Industry', url: 'https://bnrs.dti.gov.ph/faq', scope: 'When a sole proprietor needs DTI business-name registration and how it relates to a local business permit.' },
+  { id: 'sec', title: 'SEC eSPARC company registration', agency: 'Securities and Exchange Commission', url: 'https://esparc.sec.gov.ph/application/selection', scope: 'Available SEC registration paths for corporations and partnerships.' },
+  { id: 'bir-newbizreg', title: 'NewBizReg business registration', agency: 'Bureau of Internal Revenue', url: 'https://web-services.bir.gov.ph/newbizreg/', scope: 'Current BIR new-business registration route and documentary requirement links.' },
+  { id: 'bir-orus', title: 'ORUS secondary registration', agency: 'Bureau of Internal Revenue', url: 'https://www.bir.gov.ph/secondary-registration', scope: 'BIR online services for books of accounts and invoice-related transactions; which apply depends on the business.' },
+  { id: 'boi-permit', title: 'Business permit overview', agency: 'Board of Investments', url: 'https://boi.gov.ph/how-to-setup-business/setting-up/business-process-business-permit/', scope: 'General local permit preparation and the need to confirm actual procedures with the business address LGU.' },
+  { id: 'food-sanitation', title: 'Food Establishments: Code on Sanitation rules', agency: 'Supreme Court E-Library (DOH rules)', url: 'https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/10/39219', scope: 'Sanitary permits for food establishments and health certificates for food handlers; coordinate details with the city or municipal health office.' },
+  { id: 'sss', title: 'Employer registration', agency: 'Social Security System', url: 'https://www.sss.gov.ph/employer-er/', scope: 'SSS employer registration and employee reporting when the business hires workers.' },
+  { id: 'philhealth', title: 'Employer registration', agency: 'PhilHealth', url: 'https://www.philhealth.gov.ph/partners/employers/registration.php', scope: 'PhilHealth employer registration when the business hires workers.' },
+  { id: 'pagibig', title: 'Employer data form and registration information', agency: 'Pag-IBIG Fund', url: 'https://www.pagibigfund.gov.ph/document/pdf/dlforms/providentrelated/PFF002_EmployersDataForm_V09.pdf', scope: 'Pag-IBIG employer registration information; confirm current filing steps with the Fund.' },
+];
