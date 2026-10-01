@@ -32,6 +32,8 @@ yarn-error.*
 
 # local env files
 .env*.local
+.idea/
+auth-link-hosting/.firebase/
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +41,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+/.cxx/
+/build-debug.log
+/cmake-debug.log
+/native-path-check.log
+
+.env*.local

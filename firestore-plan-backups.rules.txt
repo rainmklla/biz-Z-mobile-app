@@ -1,0 +1,15 @@
+// ADD this match block inside match /databases/{database}/documents.
+// Keep existing users/profile/businessPlans rules. This is not a replacement rules file.
+match /users/{userId}/planBackups/{workspaceId} {
+  allow read: if request.auth != null && request.auth.uid == userId;
+  allow create, update: if request.auth != null
+    && request.auth.uid == userId
+    && workspaceId.matches('[0-9]+-[0-9]+')
+    && request.resource.data.keys().hasOnly(['payload', 'schema', 'updatedAt'])
+    && request.resource.data.keys().hasAll(['payload', 'schema', 'updatedAt'])
+    && request.resource.data.schema == 1
+    && request.resource.data.payload is string
+    && request.resource.data.payload.size() <= 800000
+    && request.resource.data.updatedAt == request.time;
+  allow delete: if false;
+}

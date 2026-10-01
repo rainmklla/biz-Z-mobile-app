@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "226541032624",
+    "project_id": "business-plan-builder-6769c",
+    "storage_bucket": "business-plan-builder-6769c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:226541032624:android:113c275505d4a29b5f9775",
+        "android_client_info": {
+          "package_name": "com.rhianna.businessplanbuilder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbS6uXNDmVaHNDxRmvfoSdP4RyajtWpEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Business Plan Builder</title>
+
+    <style>
+        body {
+          margin: 0;
+          min-height: 100vh;
+          display: grid;
+          place-items: center;
+          background: #f7faf7;
+          font-family: Arial, sans-serif;
+          color: #18382c;
+        }
+
+        main {
+          max-width: 400px;
+          margin: 24px;
+          padding: 28px;
+          border-radius: 20px;
+          background: white;
+          border: 1px solid #d7e4da;
+        }
+
+        p {
+          line-height: 1.6;
+          color: #596c62;
+        }
+
+        a {
+          display: block;
+          padding: 16px;
+          margin-top: 24px;
+          border-radius: 12px;
+          background: #245c42;
+          color: white;
+          text-align: center;
+          text-decoration: none;
+          font-weight: bold;
+        }
+
+        [hidden] {
+          display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <h1 id="heading">Business Plan Builder</h1>
+    <p id="message">Open this page using the link from your email.</p>
+    <a id="continueLink" hidden>Continue</a>
+    <noscript>Please enable JavaScript to continue.</noscript>
+</main>
+
+<script>
+    const parameters = new URLSearchParams(window.location.search);
+    const mode = parameters.get('mode');
+    const code = parameters.get('oobCode');
+
+    const heading = document.getElementById('heading');
+    const message = document.getElementById('message');
+    const link = document.getElementById('continueLink');
+
+    if (mode === 'resetPassword' && code) {
+      const appParameters = new URLSearchParams({
+        mode: 'resetPassword',
+        oobCode: code,
+      });
+
+      heading.textContent = 'Reset your password';
+      message.textContent =
+        'Open the app on your Android device to verify this link and choose a new password. If you are on a computer, open this email on your Android device.';
+
+      link.textContent = 'Open app to continue';
+      link.href =
+        'intent://business-plan-builder-6769c.web.app/reset-password?' +
+        appParameters.toString() +
+        '#Intent;scheme=https;' +
+        'package=com.rhianna.businessplanbuilder;end';
+      link.hidden = false;
+    } else if (mode && code && parameters.get('apiKey')) {
+      // Keep other email actions on Firebase's default handler.
+      const destination = new URL(
+        'https://business-plan-builder-6769c.firebaseapp.com/__/auth/action'
+      );
+
+      for (const name of ['mode', 'oobCode', 'apiKey', 'lang', 'tenantId']) {
+        const value = parameters.get(name);
+        if (value) {
+          destination.searchParams.set(name, value);
+        }
+      }
+
+      message.textContent =
+        'Continue securely with Firebase to complete your account request.';
+      link.textContent = 'Continue';
+      link.href = destination.toString();
+      link.hidden = false;
+    } else {
+      message.textContent =
+        'This link is incomplete. Please use the complete link from your email.';
+    }
+</script>
+</body>
+</html>

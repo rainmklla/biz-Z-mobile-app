@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Reset password — Business Plan Builder</title>
+
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+          min-height: 100vh;
+          display: grid;
+          place-items: center;
+          padding: 24px;
+          background: #f7faf7;
+          color: #18382c;
+          font-family: Arial, sans-serif;
+        }
+
+        main {
+          width: 100%;
+          max-width: 440px;
+          padding: 32px;
+          border: 1px solid #d7e4da;
+          border-radius: 24px;
+          background: white;
+        }
+
+        .brand {
+          color: #245c42;
+          font-size: 14px;
+          font-weight: bold;
+        }
+
+        h1 {
+          margin-top: 28px;
+          font-size: 28px;
+        }
+
+        p {
+          color: #596c62;
+          line-height: 1.6;
+        }
+
+        .button {
+          display: block;
+          margin-top: 24px;
+          padding: 16px;
+          border-radius: 12px;
+          background: #245c42;
+          color: white;
+          text-align: center;
+          text-decoration: none;
+          font-weight: bold;
+        }
+
+        .button:focus-visible {
+          outline: 3px solid #18382c;
+          outline-offset: 4px;
+        }
+
+        [hidden] {
+          display: none !important;
+        }
+
+        .hint {
+          margin-top: 24px;
+          font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <div class="brand">Business Plan Builder</div>
+
+    <h1>Reset your password</h1>
+
+    <p id="message" role="status">
+        Open this page using the password-reset link from your email.
+    </p>
+
+    <a id="openApp" class="button" hidden>
+        Open app to continue
+    </a>
+
+    <p class="hint">
+        Use the Android device where Business Plan Builder is installed.
+        If you opened this email on a computer, open the same email
+        on your Android device.
+    </p>
+
+    <noscript>
+        <p>Please enable JavaScript to use the Open app button.</p>
+    </noscript>
+</main>
+
+<script>
+    const parameters = new URLSearchParams(window.location.search);
+    const mode = parameters.get('mode');
+    const code = parameters.get('oobCode');
+
+    const message = document.getElementById('message');
+    const openApp = document.getElementById('openApp');
+
+    if (mode === 'resetPassword' && code) {
+      const appParameters = new URLSearchParams({
+        mode: 'resetPassword',
+        oobCode: code,
+      });
+
+      openApp.href =
+        'intent://business-plan-builder-6769c.web.app/reset-password?' +
+        appParameters.toString() +
+        '#Intent;scheme=https;' +
+        'package=com.rhianna.businessplanbuilder;end';
+
+      openApp.hidden = false;
+
+      message.textContent =
+        'Continue in the app to validate your reset link and choose a new password.';
+    } else {
+      message.textContent =
+        'This page needs a password-reset link. Request a new link from Forgot password in the app.';
+    }
+</script>
+</body>
+</html>
