@@ -17,6 +17,8 @@ export default function RootLayout() {
         <Stack.Screen name="help" options={{ headerShown: true, title: 'A little help' }} />
         <Stack.Screen name="plan/[id]" options={{ headerShown: true, title: 'Build my plan' }} />
         <Stack.Screen name="plan-preview" options={{ headerShown: true, title: 'Review & export' }} />
+        <Stack.Screen name="launch-guide" options={{ headerShown: true, title: 'Start my business' }} />
+        <Stack.Screen name="document-preview" options={{ headerShown: false }} />
       </Stack>
       </PlanningProvider>
     </App>
