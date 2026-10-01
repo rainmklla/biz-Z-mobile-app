@@ -5,7 +5,7 @@ import { colors, ui } from './theme';
 
 type ActionProps = {
   title: string; onPress: () => void; disabled?: boolean; loading?: boolean;
-  variant?: 'primary' | 'secondary' | 'quiet';
+  variant?: 'primary' | 'secondary' | 'accent' | 'quiet';
   icon?: React.ComponentProps<typeof Ionicons>['name'];
 };
 
@@ -13,11 +13,11 @@ export function Action({ title, onPress, disabled = false, loading = false, vari
   return (
     <Pressable onPress={onPress} disabled={disabled || loading} accessibilityRole="button"
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
-      style={({ pressed }) => [styles.button, variant === 'primary' ? styles.primary : styles.secondary,
+      style={({ pressed }) => [styles.button, variant === 'primary' ? styles.primary : variant === 'accent' ? styles.accent : styles.secondary,
         variant === 'quiet' && styles.quiet, pressed && { transform: [{ translateY: 2 }], borderBottomWidth: 2 },
         (disabled || loading) && { opacity: 0.55 }]}>
-      {loading ? <ActivityIndicator color={colors.ink} /> : icon ? <Ionicons name={icon} size={19} color={colors.ink} /> : null}
-      <Text style={styles.buttonText}>{title}</Text>
+      {loading ? <ActivityIndicator color={variant === 'accent' ? colors.purple : colors.ink} /> : icon ? <Ionicons name={icon} size={19} color={variant === 'accent' ? colors.purple : colors.ink} /> : null}
+      <Text style={[styles.buttonText, variant === 'accent' && styles.accentText]}>{title}</Text>
     </Pressable>
   );
 }
@@ -53,9 +53,11 @@ export function ZeeNote({ children }: React.PropsWithChildren) {
 const styles = StyleSheet.create({
   button: { minHeight: 54, borderRadius: 16, paddingVertical: 13, paddingHorizontal: 17, borderWidth: 2, borderBottomWidth: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
   primary: { backgroundColor: colors.yellow, borderColor: colors.yellowEdge },
+  accent: { backgroundColor: colors.lavender, borderColor: colors.purple },
   secondary: { backgroundColor: colors.surface, borderColor: colors.line },
   quiet: { backgroundColor: 'transparent', borderColor: 'transparent', borderBottomWidth: 2 },
   buttonText: { fontSize: 15, fontWeight: '800', color: colors.ink, flexShrink: 1, textAlign: 'center' },
+  accentText: { color: colors.purple },
   brand: { fontSize: 25, fontWeight: '900', letterSpacing: -1, color: colors.ink },
   wing: { position: 'absolute', top: 31, width: 30, height: 38, borderRadius: 24, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#DDD8C6' },
   antenna: { position: 'absolute', top: 8, height: 22, width: 5, borderRadius: 8, backgroundColor: colors.ink },

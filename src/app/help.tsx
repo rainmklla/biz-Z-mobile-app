@@ -8,9 +8,9 @@ const steps = [
   ['Start with you', 'Tell us your story, choose 5 interests and 5 personality traits, then add your working style, location and budget.'],
   ['Explore a few possibilities', 'Ask for three tailored ideas. Compare the fit, estimated costs and first steps. Generate another set whenever you need a new direction.'],
   ['Choose your starting point', 'Confirm a business to save it. Exploring other ideas never replaces your choice automatically.'],
-  ['Build, save and review', 'Open a section from My journey. Write manually or ask Zee for help. Accept suggestions into the editor, save your draft, then mark it reviewed.'],
-  ['Bring the story together', 'Review your first six sections before marking the executive summary reviewed. Changing an earlier draft asks you to review the summary again.'],
-  ['Preview and export', 'Open My plan to read all eight sections and share a PDF. Unfinished sections are labeled. Device drafts persist after restarting; cloud backups are manual snapshots.'],
+  ['Build one section at a time', 'Every section has a short, finite checklist. When you finish the last step, Zee creates a paragraph draft from your answers. Review it, make changes, and save it. Zee’s optional chat is separate; it never adds required questions.'],
+  ['Review and finish', 'Save a draft that reflects your answers, then mark that section complete. Finish and review the first six sections before completing the executive summary. Editing an answer or draft reopens its review.'],
+  ['Preview and export', 'My plan shows what is finished and what remains. PDF export unlocks only after all guided steps are answered and all eight sections are saved and reviewed. Device drafts persist after restarting; cloud backups are manual snapshots.'],
 ];
 export default function HelpRoute() {
   const router = useRouter();
