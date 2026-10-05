@@ -11,7 +11,7 @@ export default function LandingScreen({ onGetStarted, onLogin }: { onGetStarted:
     <Text style={styles.title}>A little closer to{'\n'}“I built this.”</Text>
     <Text style={ui.body}>Turn what makes you, you into a business idea worth exploring. One small step at a time.</Text>
     <View style={styles.steps}>{['Find your spark', 'Explore ideas', 'Choose your path'].map((text, i) => <View key={text} style={styles.step}><Text style={styles.number}>{i + 1}</Text><Text style={styles.stepText}>{text}</Text></View>)}</View>
-    <View style={{ gap: 12, marginTop: 'auto', paddingTop: 8 }}><Action title="Find my starting point" icon="arrow-forward" onPress={onGetStarted} /><Action title="I already have an account" variant="secondary" onPress={onLogin} /><Text style={[ui.small, { textAlign: 'center' }]}>A little progress. A lot of possibility.</Text></View>
+    <View style={{ gap: 12, marginTop: 'auto', paddingTop: 8 }}><Action title="Sign up" icon="arrow-forward" onPress={onGetStarted} /><Action title="Log in" variant="secondary" onPress={onLogin} /><Text style={[ui.small, { textAlign: 'center' }]}>A little progress. A lot of possibility.</Text></View>
   </ScrollView>;
 }
 const styles = StyleSheet.create({

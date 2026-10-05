@@ -27,6 +27,8 @@ import {
   registerUser,
   loginUser,
   logoutUser,
+  sendVerificationEmail,
+  refreshEmailVerification,
 } from './src/services/authService';
 import {
   EMPTY_DETAILS,
@@ -47,6 +49,7 @@ import type { SelectedBusiness } from './src/services/businessPlanService';
 
 import LandingScreen from './src/screens/LandingScreen';
 import AuthScreen from './src/screens/AuthScreen';
+import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { profileError as validateProfile } from './src/data/profileValidation';
 import { Brand, Action } from './src/ui/BizUI';
@@ -62,6 +65,7 @@ function useAppState() {
   const router = useRouter();
 
   const [user, setUser] = useState<AuthUser>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [startupError, setStartupError] = useState('');
   const [startupRetry, setStartupRetry] = useState(0);
@@ -107,6 +111,7 @@ function useAppState() {
           if (!active) return;
 
           setUser(currentUser);
+          setEmailVerified(currentUser?.emailVerified ?? false);
           setInitializing(false);
           setProfileLoading(!!currentUser);
           setProfileError('');
@@ -181,6 +186,14 @@ function useAppState() {
     try {
       if (registering) {
         await registerUser(email, password);
+        try {
+          await sendVerificationEmail();
+        } catch (error) {
+          Alert.alert(
+            'Account created',
+            `We couldn’t send the verification email. You can try again from the verification screen. ${message(error)}`,
+          );
+        }
       } else {
         await loginUser(email, password);
       }
@@ -196,6 +209,12 @@ function useAppState() {
       operation.current = false;
       setBusy(false);
     }
+  }
+
+  async function checkEmailVerification() {
+    const verified = await refreshEmailVerification();
+    setEmailVerified(verified);
+    return verified;
   }
 
   async function saveProfile() {
@@ -415,6 +434,7 @@ function useAppState() {
 
   return {
     user,
+    emailVerified,
     initializing,
     startupError,
     retryStartup: () => setStartupRetry(value => value + 1),
@@ -443,6 +463,8 @@ function useAppState() {
     selecting,
     working: busy || generating || selecting,
     submitAccount,
+    sendVerificationEmail,
+    checkEmailVerification,
     saveProfile,
     exploreIdeas,
     chooseIdea,
@@ -511,6 +533,19 @@ export function AccountGate({ children }: React.PropsWithChildren) {
           />
         )}
       </View>
+    );
+  }
+
+  if (app.user && !app.emailVerified) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <VerifyEmailScreen
+          email={app.user.email ?? ''}
+          onResend={app.sendVerificationEmail}
+          onCheck={app.checkEmailVerification}
+          onSignOut={app.logOut}
+        />
+      </SafeAreaView>
     );
   }
 
