@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBusinessApp } from '../../App';
 import { completeSections, MODULES } from '../data/plan';
@@ -7,12 +7,14 @@ import { LAUNCH_GUIDE_RESEARCH_DATE, LAUNCH_GUIDE_SOURCES } from '../data/launch
 import { usePlanning } from '../state/PlanningProvider';
 import { Action, ZeeNote } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
+import { useBizDialog } from '../ui/BizDialog';
 
 const source = (id: string) => LAUNCH_GUIDE_SOURCES.find(item => item.id === id)!;
 
 function SourceLink({ id }: { id: string }) {
+  const { showDialog } = useBizDialog();
   const item = source(id);
-  return <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(item.url).catch(() => Alert.alert('Could not open the guide', 'Check your internet connection and try again.'))} style={({ pressed }) => [ui.card, { padding: 15, gap: 4 }, pressed && { opacity: 0.7 }]}>
+  return <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(item.url).catch(() => showDialog('Could not open the guide', 'Check your internet connection and try again.'))} style={({ pressed }) => [ui.card, { padding: 15, gap: 4 }, pressed && { opacity: 0.7 }]}>
     <Text style={[ui.label, { color: colors.green, marginBottom: 0 }]}>{item.title} ↗</Text>
     <Text style={ui.small}>{item.agency} · {item.scope}</Text>
   </Pressable>;

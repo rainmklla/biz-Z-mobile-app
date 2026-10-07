@@ -25,6 +25,8 @@ export const EMPTY_DETAILS: ProfileDetails = {
   location: '',
 };
 
+const PROFILE_SETUP_MARKER = '__profile_setup_required__';
+
 function parseBudget(value: string, label: string): number {
   const text = value.trim();
 
@@ -130,6 +132,14 @@ function readBudget(value: unknown): string {
     : '';
 }
 
+export async function setProfileSetupRequired(userId: string) {
+  await setDoc(
+    doc(getFirestore(), 'users', userId),
+    { displayName: PROFILE_SETUP_MARKER },
+    { merge: true },
+  );
+}
+
 export async function loadUserProfile(userId: string) {
   const snapshot = await getDoc(
     doc(getFirestore(), 'users', userId),
@@ -150,8 +160,11 @@ export async function loadUserProfile(userId: string) {
   };
 
   return {
+    profileSetupRequired: data?.displayName === PROFILE_SETUP_MARKER,
     displayName:
-      typeof data?.displayName === 'string' ? data.displayName : '',
+      typeof data?.displayName === 'string' && data.displayName !== PROFILE_SETUP_MARKER
+        ? data.displayName
+        : '',
     background:
       typeof data?.background === 'string' ? data.background : '',
     details,

@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
-  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
 import { requestPasswordReset } from '../services/passwordResetService';
 import { Action, Zee } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
+import { useBizDialog } from '../ui/BizDialog';
 
 type AuthScreenProps = {
   registering: boolean;
@@ -33,6 +33,7 @@ export default function AuthScreen({
   onSubmit,
   onToggleMode,
 }: AuthScreenProps) {
+  const { showDialog } = useBizDialog();
   const [sendingReset, setSendingReset] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const resetInProgress = useRef(false);
@@ -44,7 +45,7 @@ export default function AuthScreen({
     }
 
     if (!email.trim()) {
-      Alert.alert(
+      showDialog(
         'Enter your email',
         'Enter your account email in the Email field, then tap Forgot password.',
       );
@@ -57,12 +58,12 @@ export default function AuthScreen({
     try {
       await requestPasswordReset(email);
 
-      Alert.alert(
+      showDialog(
         'Check your email',
         'If an account exists for this address, you’ll receive a password-reset link. Check your spam folder too. Open the link on the Android device where this app is installed.',
       );
     } catch (error) {
-      Alert.alert(
+      showDialog(
         'Unable to send reset email',
         error instanceof Error ? error.message : 'Please try again.',
       );

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { usePlanning } from '../../state/PlanningProvider';
 import { askZee } from '../../services/planAI';
 import { Action, ZeeNote } from '../../ui/BizUI';
 import { colors, ui } from '../../ui/theme';
+import { useBizDialog } from '../../ui/BizDialog';
 
 export default function ModuleRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function ModuleRoute() {
   return <ModuleEditor key={id} id={module.id} />;
 }
 function ModuleEditor({ id }: { id: ModuleId }) {
+  const { showDialog } = useBizDialog();
   const app = useBusinessApp();
   const store = usePlanning();
   const router = useRouter();
@@ -45,20 +47,20 @@ function ModuleEditor({ id }: { id: ModuleId }) {
   const guidedDirty = guidedStep < module.questions.length && guidedAnswer !== (section.answers[guidedStep] ?? '');
   const dirty = text !== section.text || !!proposal || !!answer.trim() || guidedDirty;
   usePreventRemove(dirty || busy, ({ data }) => {
-    if (busy) { Alert.alert('One little moment', 'Wait for the current action to finish.'); return; }
-    Alert.alert('Leave this section?', 'Your saved answers and draft are safe. Unsaved edits, an unsent message or a proposed draft will be discarded.', [{ text: 'Keep editing', style: 'cancel' }, { text: 'Leave', style: 'destructive', onPress: () => navigation.dispatch(data.action) }]);
+    if (busy) { showDialog('One little moment', 'Wait for the current action to finish.'); return; }
+    showDialog('Leave this section?', 'Your saved answers and draft are safe. Unsaved edits, an unsent message or a proposed draft will be discarded.', [{ text: 'Keep editing', style: 'cancel' }, { text: 'Leave', style: 'destructive', onPress: () => navigation.dispatch(data.action) }]);
   });
   async function run(work: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true; setBusy(true); setStatus('');
-    try { await work(); } catch (error) { if (alive.current) Alert.alert('Could not finish', error instanceof Error ? error.message : 'Please try again.'); }
+    try { await work(); } catch (error) { if (alive.current) showDialog('Could not finish', error instanceof Error ? error.message : 'Please try again.'); }
     finally { lock.current = false; if (alive.current) setBusy(false); }
   }
   async function save() {
     await run(async () => { await store.update(old => saveDraft(old, id, text)); setStatus('Saved on this device.'); });
   }
   async function saveGuidedStep(nextStep = guidedStep + 1) {
-    if (!guidedAnswer.trim()) { Alert.alert('Add an answer to continue', 'If you are unsure, write what you still need to find out. You can update it later.'); return; }
+    if (!guidedAnswer.trim()) { showDialog('Add an answer to continue', 'If you are unsure, write what you still need to find out. You can update it later.'); return; }
     await run(async () => {
       let answeredPlan = store.plan;
       await store.update(old => { answeredPlan = saveGuidedAnswer(old, id, guidedStep, guidedAnswer); return answeredPlan; });
@@ -80,7 +82,7 @@ function ModuleEditor({ id }: { id: ModuleId }) {
         } catch (error) {
           if (!alive.current) return;
           setStatus('Your answers are saved, but Zee could not create the draft. You can retry with Zee or write it yourself below.');
-          Alert.alert('Your answers are safe', error instanceof Error ? error.message : 'Zee could not create the draft. Please try again.');
+          showDialog('Your answers are safe', error instanceof Error ? error.message : 'Zee could not create the draft. Please try again.');
         }
       } else setStatus(`Step ${guidedStep + 1} saved. You can continue whenever you are ready.`);
     });
@@ -100,7 +102,7 @@ function ModuleEditor({ id }: { id: ModuleId }) {
     } else { setGuidedStep(previous); setGuidedAnswer(section.answers[previous] ?? ''); }
   }
   async function send(draft: boolean, request = answer) {
-    if (text !== section.text || guidedDirty) { Alert.alert('Save your edits first', 'Zee uses your saved answers and draft. Save them before asking for help.'); return; }
+    if (text !== section.text || guidedDirty) { showDialog('Save your edits first', 'Zee uses your saved answers and draft. Save them before asking for help.'); return; }
     await run(async () => {
       const prompt = request.trim() || (draft && section.text.trim()
         ? `Revise my current ${module.title} draft using the latest Zee reply in this conversation. Incorporate Zee's ideas as clearly labeled proposed options when I have not confirmed them; do not present those suggestions as decisions or facts about my business. Preserve the details I supplied, use clear paragraphs, and mention missing details only when this section's guided questions ask for them.`
@@ -124,7 +126,7 @@ function ModuleEditor({ id }: { id: ModuleId }) {
     });
   }
   function startNewChat() {
-    Alert.alert('Start a new Zee chat?', 'This clears the saved Zee conversation and discards any unsent message or unaccepted suggestion for this section. Your guided answers and saved draft stay safe.', [
+    showDialog('Start a new Zee chat?', 'This clears the saved Zee conversation and discards any unsent message or unaccepted suggestion for this section. Your guided answers and saved draft stay safe.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Start new chat', style: 'destructive', onPress: () => void run(async () => {
         await store.update(old => ({ ...old, updatedAt: new Date().toISOString(), sections: { ...old.sections, [id]: { ...old.sections[id], messages: [] } } }));
@@ -203,6 +205,6 @@ function ModuleEditor({ id }: { id: ModuleId }) {
       {!!status && <Text accessibilityLiveRegion="polite" style={[ui.body, { color: colors.green }]}>{status}</Text>}
       <Action title={index === 7 ? 'Preview my whole plan' : `Next: ${MODULES[index + 1].title}`} disabled={busy} onPress={() => index === 7 ? router.push('/plan-preview') : router.replace({ pathname: '/plan/[id]', params: { id: MODULES[index + 1].id } })} />
     </ScrollView>
-      <Modal visible={history} animationType="slide" onRequestClose={() => setHistory(false)}><SafeAreaView style={ui.screen}><ScrollView contentContainerStyle={ui.content}><Text style={ui.title}>Draft version history</Text><Text style={ui.body}>Restoring adds a new version and asks you to review again.</Text><Action title="Close history" variant="secondary" onPress={() => setHistory(false)} />{[...section.versions].reverse().map((v, i) => <View key={`${v.date}-${i}`} style={ui.card}><Text style={ui.label}>Version {section.versions.length - i} · {new Date(v.date).toLocaleString()}</Text><Text selectable style={ui.body}>{formatDraftParagraphs(v.text) || '(Empty draft)'}</Text><Action title="Restore this version" disabled={busy} onPress={() => Alert.alert('Restore this draft?', 'This will replace any unsaved edits. Your saved versions remain available within the 10-version limit.', [{ text: 'Cancel', style: 'cancel' }, { text: 'Restore', onPress: () => void run(async () => { const restored = formatDraftParagraphs(v.text); await store.update(old => saveDraft(old, id, restored, true)); setText(restored); setProposal(''); setHistory(false); setStatus('Version restored on this device. Please review it again.'); }) }])} /></View>)}</ScrollView></SafeAreaView></Modal>
+      <Modal visible={history} animationType="slide" onRequestClose={() => setHistory(false)}><SafeAreaView style={ui.screen}><ScrollView contentContainerStyle={ui.content}><Text style={ui.title}>Draft version history</Text><Text style={ui.body}>Restoring adds a new version and asks you to review again.</Text><Action title="Close history" variant="secondary" onPress={() => setHistory(false)} />{[...section.versions].reverse().map((v, i) => <View key={`${v.date}-${i}`} style={ui.card}><Text style={ui.label}>Version {section.versions.length - i} · {new Date(v.date).toLocaleString()}</Text><Text selectable style={ui.body}>{formatDraftParagraphs(v.text) || '(Empty draft)'}</Text><Action title="Restore this version" disabled={busy} onPress={() => showDialog('Restore this draft?', 'This will replace any unsaved edits. Your saved versions remain available within the 10-version limit.', [{ text: 'Cancel', style: 'cancel' }, { text: 'Restore', onPress: () => void run(async () => { const restored = formatDraftParagraphs(v.text); await store.update(old => saveDraft(old, id, restored, true)); setText(restored); setProposal(''); setHistory(false); setStatus('Version restored on this device. Please review it again.'); }) }])} /></View>)}</ScrollView></SafeAreaView></Modal>
   </KeyboardAvoidingView>;
 }

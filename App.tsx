@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Button,
   Keyboard,
   ScrollView,
@@ -34,6 +33,7 @@ import {
   EMPTY_DETAILS,
   loadUserProfile,
   saveUserProfile,
+  setProfileSetupRequired,
 } from './src/services/profileService';
 import type { ProfileDetails } from './src/services/profileService';
 import { generateBusinessIdeas } from './src/services/businessIdeaService';
@@ -54,6 +54,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import { profileError as validateProfile } from './src/data/profileValidation';
 import { Brand, Action } from './src/ui/BizUI';
 import { colors } from './src/ui/theme';
+import { useBizDialog } from './src/ui/BizDialog';
 
 type AuthUser = ReturnType<typeof getAuth>['currentUser'];
 
@@ -63,6 +64,7 @@ function message(error: unknown) {
 
 function useAppState() {
   const router = useRouter();
+  const { showDialog } = useBizDialog();
 
   const [user, setUser] = useState<AuthUser>(null);
   const [emailVerified, setEmailVerified] = useState(false);
@@ -95,6 +97,8 @@ function useAppState() {
 
   const operation = useRef(false);
   const confirmationOpen = useRef(false);
+  const registrationPending = useRef(false);
+  const pendingNewAccountId = useRef('');
 
   useEffect(() => {
     let active = true;
@@ -157,8 +161,12 @@ function useAppState() {
         setBackground(profile.background);
         setDetails(profile.details);
         setSelectedBusiness(selection);
-        // Existing complete accounts keep access; new accounts finish onboarding first.
-        setOnboardingComplete(!!profile.displayName.trim() && !!profile.background.trim() && profile.details.interests.length > 0 && profile.details.personality.length > 0 && profile.details.workingStyle.length > 0 && !!profile.details.location.trim() && !!profile.details.startingCapital && !!profile.details.monthlyBudget);
+        // Only accounts explicitly marked during registration must complete setup.
+        setOnboardingComplete(
+          !profile.profileSetupRequired &&
+            !registrationPending.current &&
+            pendingNewAccountId.current !== userId,
+        );
       })
       .catch(error => {
         if (!cancelled) setProfileError(message(error));
@@ -176,7 +184,7 @@ function useAppState() {
     if (operation.current) return;
 
     if (!email.trim() || !password) {
-      Alert.alert('Missing details', 'Enter your email and password.');
+      showDialog('Missing details', 'Enter your email and password.');
       return;
     }
 
@@ -185,23 +193,32 @@ function useAppState() {
 
     try {
       if (registering) {
-        await registerUser(email, password);
+        registrationPending.current = true;
+        try {
+          const credential = await registerUser(email, password);
+          pendingNewAccountId.current = credential.user.uid;
+          await setProfileSetupRequired(credential.user.uid);
+        } finally {
+          registrationPending.current = false;
+        }
         try {
           await sendVerificationEmail();
         } catch (error) {
-          Alert.alert(
+          showDialog(
             'Account created',
             `We couldn’t send the verification email. You can try again from the verification screen. ${message(error)}`,
           );
         }
       } else {
+        registrationPending.current = false;
+        pendingNewAccountId.current = '';
         await loginUser(email, password);
       }
 
       setPassword('');
       router.replace('/');
     } catch (error) {
-      Alert.alert(
+      showDialog(
         registering ? 'Registration failed' : 'Login failed',
         message(error),
       );
@@ -220,7 +237,7 @@ function useAppState() {
   async function saveProfile() {
     if (!user || operation.current) return false;
     const validation = validateProfile({ displayName, background, details });
-    if (validation) { Alert.alert('A little more about you', validation); return false; }
+    if (validation) { showDialog('A little more about you', validation); return false; }
 
     const uid = user.uid;
     operation.current = true;
@@ -230,14 +247,15 @@ function useAppState() {
       await saveUserProfile(uid, displayName, background, details);
 
       if (getAuth().currentUser?.uid === uid) {
+        pendingNewAccountId.current = '';
         setOnboardingComplete(true);
-        Alert.alert('Profile saved', 'Your profile has been updated.');
+        showDialog('Profile saved', 'Your profile has been updated.');
         return true;
       }
       return false;
     } catch (error) {
       if (getAuth().currentUser?.uid === uid) {
-        Alert.alert('Unable to save', message(error));
+        showDialog('Unable to save', message(error));
       }
       return false;
     } finally {
@@ -252,7 +270,7 @@ function useAppState() {
     const validation = validateProfile({ displayName, background, details });
     if (validation) {
       router.navigate('/profile');
-      Alert.alert(
+      showDialog(
         'Complete your profile',
         `${validation} Open Edit my profile to update your answers.`,
       );
@@ -277,7 +295,7 @@ function useAppState() {
       }
     } catch (error) {
       if (getAuth().currentUser?.uid === uid) {
-        Alert.alert('Unable to generate ideas', message(error));
+        showDialog('Unable to generate ideas', message(error));
       }
     } finally {
       operation.current = false;
@@ -317,16 +335,16 @@ function useAppState() {
       router.navigate('/');
 
       if (result.alreadySelected) {
-        Alert.alert(
+        showDialog(
           'Existing business loaded',
           'A business was already saved. Open Ideas to choose a replacement.',
         );
       } else {
-        Alert.alert('Business saved', 'Your selected business is ready.');
+        showDialog('Business saved', 'Your selected business is ready.');
       }
     } catch (error) {
       if (getAuth().currentUser?.uid === uid) {
-        Alert.alert('Unable to save your choice', message(error));
+        showDialog('Unable to save your choice', message(error));
       }
     } finally {
       operation.current = false;
@@ -350,7 +368,7 @@ function useAppState() {
 
     confirmationOpen.current = true;
 
-    Alert.alert(
+    showDialog(
       replacing ? 'Replace your business?' : 'Choose this business?',
       selectedBusiness
         ? `"${idea.title}" will replace "${selectedBusiness.idea.title}".`
@@ -383,6 +401,8 @@ function useAppState() {
 
     try {
       await logoutUser();
+      registrationPending.current = false;
+      pendingNewAccountId.current = '';
       setEmail('');
       setPassword('');
       setRegistering(false);
@@ -391,7 +411,7 @@ function useAppState() {
       setSelectedBusiness(null);
       router.replace('/');
     } catch (error) {
-      Alert.alert('Unable to log out', message(error));
+      showDialog('Unable to log out', message(error));
     } finally {
       operation.current = false;
       setBusy(false);
@@ -415,7 +435,7 @@ function useAppState() {
       setShowLanding(false);
       router.replace('/');
     } catch {
-      Alert.alert(
+      showDialog(
         'Password already updated',
         'Unable to return to login. Please try Go to login again.',
       );
