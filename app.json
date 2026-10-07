@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "business-plan-builder",
+    "name": "biz-z.",
     "slug": "business-plan-builder",
     "scheme": "businessplanbuilder",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/biz-z-app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -14,10 +14,9 @@
       "package": "com.rhianna.businessplanbuilder",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFF2B3",
+        "foregroundImage": "./assets/android-biz-z-foreground.png",
+        "monochromeImage": "./assets/android-biz-z-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
       "intentFilters": [
@@ -48,6 +47,12 @@
       "@react-native-firebase/app-check",
       "./plugins/withShortNativePaths",
       "expo-sharing"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fc0fe29d-176d-4e38-8f68-ada68fa486ad"
+      }
+    }
   }
 }
