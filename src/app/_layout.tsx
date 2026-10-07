@@ -4,10 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import App from '../../App';
 import { colors } from '../ui/theme';
 import { PlanningProvider } from '../state/PlanningProvider';
+import { BizDialogProvider } from '../ui/BizDialog';
 
 export default function RootLayout() {
   return (
-    <App>
+    <BizDialogProvider>
+      <App>
       <PlanningProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background }, headerTintColor: colors.ink, headerStyle: { backgroundColor: colors.background }, headerShadowVisible: false }}>
@@ -21,6 +23,7 @@ export default function RootLayout() {
         <Stack.Screen name="document-preview" options={{ headerShown: false }} />
       </Stack>
       </PlanningProvider>
-    </App>
+      </App>
+    </BizDialogProvider>
   );
 }

@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, Text, View } from 'react-native';
+import { Platform, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBusinessApp } from '../../App';
 import { answeredSteps, completeSections, formatDraftParagraphs, isSectionComplete, MODULES, planHtml } from '../data/plan';
 import { usePlanning } from '../state/PlanningProvider';
 import { Action, Zee } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
+import { useBizDialog } from '../ui/BizDialog';
 
 export default function PlanPreview() {
+  const { showDialog } = useBizDialog();
   const app = useBusinessApp(); const store = usePlanning(); const router = useRouter();
   const [busy, setBusy] = useState(false); const [status, setStatus] = useState('');
   const selection = app.selectedBusiness;
   const complete = completeSections(store.plan);
   const planReady = complete === MODULES.length;
   const actionsLocked = !store.ready || !!store.error || !planReady || busy;
-  async function run(task: () => Promise<void>) { if (busy) return; setBusy(true); setStatus(''); try { await task(); } catch (e) { Alert.alert('Could not finish', e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); } }
+  async function run(task: () => Promise<void>) { if (busy) return; setBusy(true); setStatus(''); try { await task(); } catch (e) { showDialog('Could not finish', e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); } }
   async function exportPdf() {
     if (!selection) return;
-    if (!planReady) { Alert.alert('Finish your guided plan first', 'Answer every guided step, save and review each section, then you can export a complete PDF.'); return; }
+    if (!planReady) { showDialog('Finish your guided plan first', 'Answer every guided step, save and review each section, then you can export a complete PDF.'); return; }
     await run(async () => {
       const Print = await import('expo-print');
       const html = planHtml(selection.idea.title, store.plan);

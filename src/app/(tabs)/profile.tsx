@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBusinessApp } from '../../../App';
 import ProfileScreen from '../../screens/ProfileScreen';
 import { Action, ZeeNote } from '../../ui/BizUI';
 import { colors, ui } from '../../ui/theme';
+import { useBizDialog } from '../../ui/BizDialog';
 
 export default function ProfileTab() {
+  const { showDialog } = useBizDialog();
   const app = useBusinessApp();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -14,7 +16,7 @@ export default function ProfileTab() {
   function cancel() {
     app.setDisplayName(original.current.displayName); app.setBackground(original.current.background); app.setDetails(original.current.details); setEditing(false);
   }
-  if (editing) return <ProfileScreen editing email={app.user?.email ?? ''} displayName={app.displayName} background={app.background} details={app.details} busy={app.working} onChangeName={app.setDisplayName} onChangeBackground={app.setBackground} onChangeDetails={app.setDetails} onCancel={() => Alert.alert('Leave your edits?', 'Your saved profile will stay as it was.', [{ text: 'Keep editing', style: 'cancel' }, { text: 'Discard edits', onPress: cancel }])} onSave={() => { void app.saveProfile().then(saved => { if (saved) setEditing(false); }); }} />;
+  if (editing) return <ProfileScreen editing email={app.user?.email ?? ''} displayName={app.displayName} background={app.background} details={app.details} busy={app.working} onChangeName={app.setDisplayName} onChangeBackground={app.setBackground} onChangeDetails={app.setDetails} onCancel={() => showDialog('Leave your edits?', 'Your saved profile will stay as it was.', [{ text: 'Keep editing', style: 'cancel' }, { text: 'Discard edits', onPress: cancel }])} onSave={() => { void app.saveProfile().then(saved => { if (saved) setEditing(false); }); }} />;
   return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
     <Text style={ui.eyebrow}>THE PERSON BEHIND THE POSSIBILITIES</Text>
     <Text style={ui.title}>A business that feels like you.</Text>
