@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   Alert,
   Pressable,
@@ -33,6 +34,7 @@ export default function AuthScreen({
   onToggleMode,
 }: AuthScreenProps) {
   const [sendingReset, setSendingReset] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const resetInProgress = useRef(false);
   const disabled = busy || sendingReset;
 
@@ -98,18 +100,35 @@ export default function AuthScreen({
       />
 
       <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={[ui.input, { marginBottom: 20 }]}
-        accessibilityLabel="Password"
-        placeholder="Your password"
-        placeholderTextColor="#77857d"
-        value={password}
-        onChangeText={onChangePassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!disabled}
-      />
+      <View style={styles.passwordField}>
+        <TextInput
+          style={styles.passwordInput}
+          accessibilityLabel="Password"
+          placeholder="Your password"
+          placeholderTextColor="#77857d"
+          value={password}
+          onChangeText={onChangePassword}
+          secureTextEntry={!passwordVisible}
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!disabled}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+          accessibilityState={{ disabled }}
+          disabled={disabled}
+          onPress={() => setPasswordVisible(visible => !visible)}
+          hitSlop={8}
+          style={({ pressed }) => [styles.passwordVisibilityButton, pressed && styles.dimmed]}
+        >
+          <Ionicons
+            name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+            size={22}
+            color={colors.muted}
+          />
+        </Pressable>
+      </View>
 
       {!registering && (
         <Pressable
@@ -181,6 +200,31 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     color: '#222222',
+  },
+  passwordField: {
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.line,
+    borderRadius: 16,
+    paddingLeft: 14,
+    paddingRight: 10,
+    marginBottom: 20,
+    backgroundColor: colors.surface,
+  },
+  passwordInput: {
+    flex: 1,
+    minHeight: 50,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  passwordVisibilityButton: {
+    width: 40,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forgotButton: {
     alignSelf: 'flex-end',
