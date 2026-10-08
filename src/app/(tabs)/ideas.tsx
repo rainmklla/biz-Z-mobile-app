@@ -7,7 +7,7 @@ import BusinessIdeasScreen from '../../screens/BusinessIdeasScreen';
 
 export default function IdeasTab() {
   const app = useBusinessApp();
-  return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
+  return <ScrollView style={ui.screen} contentContainerStyle={[ui.content, { paddingBottom: 120 }]}>
     <Text style={ui.eyebrow}>FOLLOW YOUR CURIOSITY</Text><Text style={ui.title}>A few possibilities.{ '\n' }A whole lot of you.</Text><Text style={ui.body}>Ideas shaped by your interests, strengths, location and budget.</Text>
     {!app.recommendations && !app.generating && <View style={[ui.card, { backgroundColor: colors.lavender, alignItems: 'center' }]}><Zee size={110} /><Text style={ui.heading}>Let’s find your spark.</Text><Text style={[ui.body, { textAlign: 'center' }]}>You bring the you. Gemini helps connect the dots.</Text></View>}
     <Action title={app.generating ? 'Finding your possibilities…' : app.recommendations ? 'Explore a fresh set' : 'Find my business ideas'} icon="sparkles" loading={app.generating} disabled={app.working} onPress={app.exploreIdeas} />

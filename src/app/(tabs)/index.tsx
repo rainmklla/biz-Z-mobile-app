@@ -12,7 +12,7 @@ export default function JourneyTab() {
   const router = useRouter();
   const selection = app.selectedBusiness;
   const completed = selection ? 3 : app.recommendations ? 2 : 1;
-  return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
+  return <ScrollView style={ui.screen} contentContainerStyle={[ui.content, { paddingBottom: 120 }]}>
     <Text style={ui.eyebrow}>A LITTLE AMBITION GOES A LONG WAY</Text>
     <Text style={ui.title}>Let’s build your{ '\n' }next big thing.</Text>
     <Text style={ui.body}>Hi {app.displayName.split(' ')[0]}. Your pace. Your path. One little step today.</Text>

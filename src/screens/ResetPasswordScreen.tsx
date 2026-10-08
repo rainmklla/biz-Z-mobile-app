@@ -13,6 +13,8 @@ import {
 } from '../services/passwordResetService';
 import { Action, Brand } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
+import { getPasswordRequirementStatus } from '../services/passwordPolicy';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type Props = {
   code: string;
@@ -159,6 +161,22 @@ export default function ResetPasswordScreen({
             editable={!saving}
           />
 
+          <View style={styles.passwordRequirements} accessibilityLiveRegion="polite">
+            <Text style={styles.requirementsTitle}>Your password must have</Text>
+            {getPasswordRequirementStatus(password).map(requirement => (
+              <View key={requirement.id} style={styles.requirementRow}>
+                <Ionicons
+                  name={requirement.met ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={16}
+                  color={requirement.met ? '#3f7655' : colors.muted}
+                />
+                <Text style={[styles.requirementText, requirement.met && styles.requirementMet]}>
+                  {requirement.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+
           <Text style={styles.label}>Confirm new password</Text>
           <TextInput
             style={[ui.input, { marginBottom: 20 }]}
@@ -242,6 +260,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
     color: '#18382c',
+  },
+  passwordRequirements: {
+    marginTop: -8,
+    marginBottom: 20,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+  },
+  requirementsTitle: {
+    color: '#18382c',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 7,
+  },
+  requirementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    minHeight: 23,
+  },
+  requirementText: {
+    color: colors.muted,
+    fontSize: 12,
+  },
+  requirementMet: {
+    color: '#3f7655',
   },
   error: {
     color: '#b3261e',

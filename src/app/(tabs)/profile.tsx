@@ -17,7 +17,7 @@ export default function ProfileTab() {
     app.setDisplayName(original.current.displayName); app.setBackground(original.current.background); app.setDetails(original.current.details); setEditing(false);
   }
   if (editing) return <ProfileScreen editing email={app.user?.email ?? ''} displayName={app.displayName} background={app.background} details={app.details} busy={app.working} onChangeName={app.setDisplayName} onChangeBackground={app.setBackground} onChangeDetails={app.setDetails} onCancel={() => showDialog('Leave your edits?', 'Your saved profile will stay as it was.', [{ text: 'Keep editing', style: 'cancel' }, { text: 'Discard edits', onPress: cancel }])} onSave={() => { void app.saveProfile().then(saved => { if (saved) setEditing(false); }); }} />;
-  return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
+  return <ScrollView style={ui.screen} contentContainerStyle={[ui.content, { paddingBottom: 120 }]}>
     <Text style={ui.eyebrow}>THE PERSON BEHIND THE POSSIBILITIES</Text>
     <Text style={ui.title}>A business that feels like you.</Text>
     <Text style={ui.body}>Your interests and starting point help shape your recommendations.</Text>

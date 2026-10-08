@@ -32,7 +32,7 @@ export default function PlanPreview() {
     });
   }
   if (!app.user || !selection) return <View style={ui.content}><Text style={ui.heading}>Every plan starts with an idea.</Text><Action title="Explore ideas" onPress={() => router.navigate('/ideas')} /></View>;
-  return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
+  return <ScrollView style={ui.screen} contentContainerStyle={[ui.content, { paddingBottom: 120 }]}>
     <Text style={ui.eyebrow}>LOOK WHAT YOU’RE BUILDING</Text><Text style={ui.title}>{selection.idea.title}</Text>
     <Text style={ui.body}>{complete} of 8 sections complete. To make a complete business plan, answer each section’s guided steps, save the draft, and mark it complete.</Text>
     {!!store.error && <Text style={{ color: colors.error }}>{store.error}</Text>}

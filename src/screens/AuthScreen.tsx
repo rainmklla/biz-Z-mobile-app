@@ -11,6 +11,7 @@ import { requestPasswordReset } from '../services/passwordResetService';
 import { Action, Zee } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
 import { useBizDialog } from '../ui/BizDialog';
+import { getPasswordRequirementStatus, validatePassword } from '../services/passwordPolicy';
 
 type AuthScreenProps = {
   registering: boolean;
@@ -38,6 +39,18 @@ export default function AuthScreen({
   const [passwordVisible, setPasswordVisible] = useState(false);
   const resetInProgress = useRef(false);
   const disabled = busy || sendingReset;
+
+  function submit() {
+    if (registering) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        showDialog('Choose a stronger password', passwordError);
+        return;
+      }
+    }
+
+    onSubmit();
+  }
 
   async function forgotPassword() {
     if (busy || resetInProgress.current) {
@@ -131,6 +144,24 @@ export default function AuthScreen({
         </Pressable>
       </View>
 
+      {registering && (
+        <View style={styles.passwordRequirements} accessibilityLiveRegion="polite">
+          <Text style={styles.requirementsTitle}>Use a strong password</Text>
+          {getPasswordRequirementStatus(password).map(requirement => (
+            <View key={requirement.id} style={styles.requirementRow}>
+              <Ionicons
+                name={requirement.met ? 'checkmark-circle' : 'ellipse-outline'}
+                size={16}
+                color={requirement.met ? colors.green : colors.muted}
+              />
+              <Text style={[styles.requirementText, requirement.met && styles.requirementMet]}>
+                {requirement.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {!registering && (
         <Pressable
           accessibilityRole="button"
@@ -156,7 +187,7 @@ export default function AuthScreen({
               ? 'Create account'
               : 'Log in'
         }
-        onPress={onSubmit}
+        onPress={submit}
         disabled={disabled}
       />
 
@@ -213,6 +244,32 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     marginBottom: 20,
     backgroundColor: colors.surface,
+  },
+  passwordRequirements: {
+    marginTop: -8,
+    marginBottom: 18,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+  },
+  requirementsTitle: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 7,
+  },
+  requirementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    minHeight: 23,
+  },
+  requirementText: {
+    color: colors.muted,
+    fontSize: 12,
+  },
+  requirementMet: {
+    color: colors.green,
   },
   passwordInput: {
     flex: 1,
