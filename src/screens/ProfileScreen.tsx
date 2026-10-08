@@ -49,7 +49,7 @@ export default function ProfileScreen(props: Props) {
   return <KeyboardAvoidingView style={ui.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <View style={styles.top}><Text style={ui.eyebrow}>{props.editing ? 'MAKE IT MORE YOU' : 'YOUR STARTING POINT'}</Text><Text style={ui.small}>{step + 1} of 6</Text></View>
     <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 6, now: step + 1 }} style={styles.track}><View style={[styles.fill, { width: `${((step + 1) / 6) * 100}%` }]} /></View>
-    <ScrollView ref={scroll} contentContainerStyle={ui.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+    <ScrollView ref={scroll} contentContainerStyle={[ui.content, { paddingBottom: 120 }]} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <View style={styles.intro}><Zee size={70} /><Text style={[ui.title, { textAlign: 'center' }]}>{titles[step]}</Text><Text style={[ui.body, { textAlign: 'center' }]}>{descriptions[step]}</Text></View>
       {step === 0 && <View style={{ gap: 20 }}>
         {field('What should we call you?', props.displayName, props.onChangeName, 'Your name')}

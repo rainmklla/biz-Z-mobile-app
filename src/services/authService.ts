@@ -5,8 +5,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from '@react-native-firebase/auth';
+import { validatePassword } from './passwordPolicy';
 
 export function registerUser(email: string, password: string) {
+  const passwordError = validatePassword(password);
+  if (passwordError) return Promise.reject(new Error(passwordError));
+
   return createUserWithEmailAndPassword(
     getAuth(),
     email.trim(),

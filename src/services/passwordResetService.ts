@@ -4,6 +4,7 @@ import {
   sendPasswordResetEmail,
   verifyPasswordResetCode,
 } from '@react-native-firebase/auth';
+import { validatePassword } from './passwordPolicy';
 
 function getErrorCode(error: unknown): string {
   if (error && typeof error === 'object' && 'code' in error) {
@@ -87,6 +88,11 @@ export async function completePasswordReset(
 
   if (!password) {
     throw new Error('Enter a new password.');
+  }
+
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    throw new Error(passwordError);
   }
 
   if (password !== confirmation) {
