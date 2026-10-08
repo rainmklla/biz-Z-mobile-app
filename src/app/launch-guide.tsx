@@ -25,7 +25,7 @@ export default function LaunchGuide() {
   const store = usePlanning();
   const router = useRouter();
   const planReady = completeSections(store.plan) === MODULES.length;
-  const location = store.plan.sections.legal.answers[0]?.trim();
+  const location = app.details.location.trim();
 
   return <ScrollView style={ui.screen} contentContainerStyle={ui.content}>
     <Action title="Back to my plan" icon="arrow-back" variant="secondary" onPress={() => router.back()} />
@@ -34,7 +34,7 @@ export default function LaunchGuide() {
     <Text style={ui.small}>This researched guide covers businesses in the Philippines. If you plan to operate in another country, these agencies and rules will not apply.</Text>
     <Text style={ui.body}>Use these Philippine government guides to work through business registration, tax registration, local permits, and any extra steps for your type of business. This guide links to official information instead of asking AI to guess which documents apply.</Text>
     {!!location && <View style={[ui.card, { backgroundColor: colors.blue }]}><Text style={ui.heading}>Your planned location</Text><Text style={ui.body}>{location}</Text><Text style={ui.small}>Confirm the exact requirements for this address with its city or municipal Business Permits and Licensing Office (BPLO) or Business One-Stop Shop (BOSS). Local procedures vary.</Text></View>}
-    {!planReady && <View style={[ui.card, { backgroundColor: colors.mint }]}><Text style={ui.heading}>Finish your plan first</Text><Text style={ui.body}>Complete and review all 8 plan sections to unlock this launch guide.</Text><Action title="Return to my plan" onPress={() => router.back()} /></View>}
+    {!planReady && <View style={[ui.card, { backgroundColor: colors.mint }]}><Text style={ui.heading}>Finish your plan first</Text><Text style={ui.body}>Complete and review all {MODULES.length} plan sections to unlock this launch guide.</Text><Action title="Return to my plan" onPress={() => router.back()} /></View>}
 
     <View style={[ui.card, { backgroundColor: colors.cream }]}>
       <Text style={ui.heading}>1. Start with the Philippine Business Hub</Text>
@@ -64,7 +64,7 @@ export default function LaunchGuide() {
       <SourceLink id="bir-orus" />
     </View>
 
-    {(app.selectedBusiness?.idea.industry.toLowerCase().includes('food') || /food|snack|bak|restaurant|catering/i.test(app.selectedBusiness?.idea.title ?? '') || store.plan.sections.legal.answers.some(answer => /food|sanitary|health certificate/i.test(answer))) && <View style={ui.card}>
+    {(app.selectedBusiness?.idea.industry.toLowerCase().includes('food') || /food|snack|bak|restaurant|catering/i.test(app.selectedBusiness?.idea.title ?? '')) && <View style={ui.card}>
       <Text style={ui.heading}>If you will prepare or sell food</Text>
       <Text style={ui.body}>The national sanitation rules address sanitary permits for food establishments and health certificates for food handlers. Ask your local health office what applies to your home-based or other setup, and what inspection or documents it requires.</Text>
       <SourceLink id="food-sanitation" />

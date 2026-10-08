@@ -1,8 +1,8 @@
 import React from 'react';
-import { ScrollView, Text, View, StyleSheet } from 'react-native';
+import { Image, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBusinessApp } from '../../App';
-import { answeredSteps, completeSections, formatDraftParagraphs, isSectionComplete, MODULES } from '../data/plan';
+import { businessNameFromPlan, completeSections, formatDraftParagraphs, MODULES } from '../data/plan';
 import { usePlanning } from '../state/PlanningProvider';
 import { Action } from '../ui/BizUI';
 import { colors, ui } from '../ui/theme';
@@ -13,37 +13,36 @@ export default function DocumentPreview() {
   const router = useRouter();
   const selection = app.selectedBusiness;
   const reviewed = completeSections(plan);
+  const chapters = MODULES.filter(module => module.id !== 'summary');
+  const chapterTitles: Record<string, string> = { overview: 'Company Overview', products: 'Product/Service', market: 'Market Analysis', marketing: 'Marketing Plan', operations: 'Operations and Management Plan', finance: 'Financial Plan' };
+  const toc = ['Executive Summary', ...chapters.map((module, index) => `Chapter ${index + 1}: ${chapterTitles[module.id]}`)];
 
   if (!selection) return <View style={ui.content}><Action title="Back to my plan" icon="arrow-back" onPress={() => router.back()} /><Text style={ui.heading}>Choose a business to preview its plan.</Text></View>;
 
   return <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
     <Action title="Back to Review & export" icon="arrow-back" variant="secondary" onPress={() => router.back()} />
-    <Text style={ui.eyebrow}>DOCUMENT PREVIEW · {reviewed}/8 SECTIONS COMPLETE</Text>
-    <Text style={ui.small}>This in-app preview follows the PDF’s content and section order. Page breaks may look different when exported.</Text>
+    <Text style={ui.eyebrow}>DOCUMENT PREVIEW · {reviewed}/{MODULES.length} MODULES COMPLETE</Text>
+    <Text style={ui.small}>Template order: title page, contents, executive summary, and Chapters 1–6.</Text>
     <View style={styles.paper}>
       <View style={styles.cover}>
-        <Text style={styles.brand}>biz-z. <Text style={styles.brandTag}>YOUR BUSINESS PLAN</Text></Text>
-        <Text style={styles.coverTitle}>{selection.idea.title}</Text>
-        <Text style={styles.meta}>Prepared {new Date().toLocaleDateString()} · {reviewed}/8 sections reviewed</Text>
-        <Text style={styles.meta}>{selection.idea.industry} · {selection.currency}</Text>
+        {plan.logoDataUrl ? <Image source={{ uri: plan.logoDataUrl }} resizeMode="contain" style={styles.logo} /> : <Text style={styles.logoPlaceholder}>Insert Logo Here</Text>}
+        <Text style={styles.coverTitle}>A Business Plan</Text>
+        {!!businessNameFromPlan(plan) && <Text style={styles.businessName}>{businessNameFromPlan(plan)}</Text>}
       </View>
-      {MODULES.map((module, index) => {
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Table of Contents</Text>
+        {toc.map((item, index) => <Text key={item} style={styles.paragraph}>{index < 2 || index > chapters.length + 1 ? item : `${item}`}</Text>)}
+      </View>
+      {[MODULES.find(module => module.id === 'summary')!, ...chapters].map((module, index) => {
         const section = plan.sections[module.id];
-        const count = answeredSteps(section, module.id);
-        const status = module.id === 'legal'
-          ? section.text.trim() ? 'Planning notes — confirm applicable requirements before opening' : 'Not started'
-          : section.reviewed ? 'Reviewed by owner' : section.text.trim() ? 'Draft — not reviewed' : 'Not started';
-        const heading = 'pdfTitle' in module ? module.pdfTitle : module.title;
-        const paragraphs = (formatDraftParagraphs(section.text) || 'This section has not been written yet.').split(/\n\s*\n/);
+        const heading = module.id === 'summary' ? 'Executive Summary' : `Chapter ${index}: ${chapterTitles[module.id]}`;
+        const paragraphs = formatDraftParagraphs(section.text).split(/\n\s*\n/).filter(Boolean);
         return <View key={module.id} style={styles.section}>
-          <Text style={styles.sectionEyebrow}>{String(index + 1).padStart(2, '0')} · {isSectionComplete(section, module.id) ? 'COMPLETE' : `${count}/${module.questions.length} STEPS · ${status.toUpperCase()}`}</Text>
           <Text style={styles.sectionTitle}>{heading}</Text>
           <View style={styles.rule} />
-          <Text style={styles.status}>{status}</Text>
           {paragraphs.map((paragraph, paragraphIndex) => <Text selectable key={`${module.id}-${paragraphIndex}`} style={styles.paragraph}>{paragraph}</Text>)}
         </View>;
       })}
-      <Text style={styles.footer}>Built with Biz-Z. Estimates and assumptions require verification. Legal planning notes do not confirm compliance; verify requirements before launch.</Text>
     </View>
     <Action title="Back to Review & export" icon="arrow-back" variant="secondary" onPress={() => router.back()} />
   </ScrollView>;
@@ -54,8 +53,9 @@ const styles = StyleSheet.create({
   content: { padding: 18, paddingBottom: 36, gap: 14 },
   paper: { paddingHorizontal: 22, paddingVertical: 26, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: 8, gap: 24, elevation: 2 },
   cover: { padding: 20, backgroundColor: colors.cream, borderRadius: 8, gap: 10 },
-  brand: { fontSize: 13, fontWeight: '900', color: colors.ink, letterSpacing: 1 },
-  brandTag: { fontSize: 10, color: colors.muted, letterSpacing: 1.2 },
+  logo: { width: 160, height: 120 },
+  logoPlaceholder: { fontSize: 13, color: colors.muted },
+  businessName: { fontSize: 18, color: colors.ink },
   coverTitle: { fontSize: 28, lineHeight: 34, fontWeight: '800', color: colors.ink },
   meta: { fontSize: 12, lineHeight: 18, color: colors.muted },
   section: { gap: 10 },
