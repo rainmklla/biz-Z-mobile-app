@@ -51,6 +51,8 @@ import LandingScreen from './src/screens/LandingScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import OnboardingIdeasScreen from './src/screens/OnboardingIdeasScreen';
+import type { OnboardingIdeasStatus } from './src/screens/OnboardingIdeasScreen';
 import { profileError as validateProfile } from './src/data/profileValidation';
 import { Brand, Action } from './src/ui/BizUI';
 import { colors } from './src/ui/theme';
@@ -85,6 +87,9 @@ function useAppState() {
   const [profileError, setProfileError] = useState('');
   const [profileRetry, setProfileRetry] = useState(0);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingIdeasStatus, setOnboardingIdeasStatus] =
+    useState<OnboardingIdeasStatus>('idle');
+  const [onboardingIdeasError, setOnboardingIdeasError] = useState('');
 
   const [recommendations, setRecommendations] =
     useState<BusinessRecommendations | null>(null);
@@ -126,6 +131,8 @@ function useAppState() {
           setRecommendations(null);
           setSelectedBusiness(null);
           setOnboardingComplete(false);
+          setOnboardingIdeasStatus('idle');
+          setOnboardingIdeasError('');
         });
       })
       .catch(error => {
@@ -234,7 +241,7 @@ function useAppState() {
     return verified;
   }
 
-  async function saveProfile() {
+  async function saveProfile(showSuccessMessage = true) {
     if (!user || operation.current) return false;
     const validation = validateProfile({ displayName, background, details });
     if (validation) { showDialog('A little more about you', validation); return false; }
@@ -249,7 +256,9 @@ function useAppState() {
       if (getAuth().currentUser?.uid === uid) {
         pendingNewAccountId.current = '';
         setOnboardingComplete(true);
-        showDialog('Profile saved', 'Your profile has been updated.');
+        if (showSuccessMessage) {
+          showDialog('Profile saved', 'Your profile has been updated.');
+        }
         return true;
       }
       return false;
@@ -264,7 +273,7 @@ function useAppState() {
     }
   }
 
-  async function exploreIdeas() {
+  async function exploreIdeas(profileAlreadySaved = false) {
     if (!user || operation.current) return;
 
     const validation = validateProfile({ displayName, background, details });
@@ -284,7 +293,9 @@ function useAppState() {
     router.navigate('/ideas');
 
     try {
-      await saveUserProfile(uid, displayName, background, details);
+      if (!profileAlreadySaved) {
+        await saveUserProfile(uid, displayName, background, details);
+      }
 
       if (getAuth().currentUser?.uid !== uid) return;
 
@@ -301,6 +312,49 @@ function useAppState() {
       operation.current = false;
       setGenerating(false);
     }
+  }
+
+  async function generateOnboardingIdeas() {
+    if (!user || operation.current) return;
+
+    const uid = user.uid;
+    operation.current = true;
+    setGenerating(true);
+    setOnboardingIdeasError('');
+    setOnboardingIdeasStatus('generating');
+
+    try {
+      const result = await generateBusinessIdeas(uid);
+      if (getAuth().currentUser?.uid === uid) {
+        setRecommendations(result);
+        setOnboardingIdeasStatus('ready');
+      }
+    } catch (error) {
+      if (getAuth().currentUser?.uid === uid) {
+        setOnboardingIdeasError(message(error));
+        setOnboardingIdeasStatus('error');
+      }
+    } finally {
+      operation.current = false;
+      setGenerating(false);
+    }
+  }
+
+  async function completeOnboarding() {
+    if (operation.current) return;
+
+    setOnboardingIdeasStatus('saving');
+    const saved = await saveProfile(false);
+    if (saved) {
+      await generateOnboardingIdeas();
+    } else {
+      setOnboardingIdeasStatus('idle');
+    }
+  }
+
+  function openOnboardingIdeas() {
+    setOnboardingIdeasStatus('idle');
+    router.navigate('/ideas');
   }
 
   async function confirmSelection(
@@ -486,6 +540,11 @@ function useAppState() {
     sendVerificationEmail,
     checkEmailVerification,
     saveProfile,
+    completeOnboarding,
+    onboardingIdeasStatus,
+    onboardingIdeasError,
+    retryOnboardingIdeas: generateOnboardingIdeas,
+    openOnboardingIdeas,
     exploreIdeas,
     chooseIdea,
     logOut,
@@ -520,6 +579,22 @@ export function useBusinessApp() {
 
 export function AccountGate({ children }: React.PropsWithChildren) {
   const app = useBusinessApp();
+
+  if (
+    app.user &&
+    app.onboardingIdeasStatus !== 'idle'
+  ) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <OnboardingIdeasScreen
+          status={app.onboardingIdeasStatus}
+          error={app.onboardingIdeasError}
+          onRetry={() => { void app.retryOnboardingIdeas(); }}
+          onContinue={app.openOnboardingIdeas}
+        />
+      </SafeAreaView>
+    );
+  }
 
   if (app.initializing || (app.user && app.profileLoading)) {
     return (
@@ -616,7 +691,7 @@ export function AccountGate({ children }: React.PropsWithChildren) {
   if (!app.onboardingComplete) {
     return <SafeAreaView style={styles.screen}>
       <View style={{ paddingHorizontal: 22, paddingTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Brand /><Action title="Sign out" variant="quiet" onPress={app.logOut} disabled={app.working} /></View>
-      <ProfileScreen email={app.user.email ?? ''} displayName={app.displayName} background={app.background} details={app.details} busy={app.working} onChangeName={app.setDisplayName} onChangeBackground={app.setBackground} onChangeDetails={app.setDetails} onSave={() => { void app.saveProfile(); }} />
+      <ProfileScreen email={app.user.email ?? ''} displayName={app.displayName} background={app.background} details={app.details} busy={app.working} onChangeName={app.setDisplayName} onChangeBackground={app.setBackground} onChangeDetails={app.setDetails} onSave={app.completeOnboarding} />
     </SafeAreaView>;
   }
   return <>{children}</>;
